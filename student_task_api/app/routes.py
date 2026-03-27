@@ -1,30 +1,31 @@
-from fastapi import APIRouter, HTTPException
-from file_load import file_load
-import numpy as np
+from fastapi import APIRouter, Depends, HTTPException,Path
+from sqlalchemy.orm import Session
+from app.db import SessionLocal
+from app.model import Student
 
-app = APIRouter()
+router = APIRouter()
 
-data = file_load()
+# DB Dependency
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
-@app.get("/student-data")
-def get_all_student_data():
-    return data
+# GET ALL DATA
+@router.get("/student-data")
+def get_all_students(db: Session = Depends(get_db)):
+    return db.query(Student).all()
 
 
+# GET BY ID
+@router.get("/student-data/{student_id}")
+def get_student(student_id: str=Path(description="PLEASE PROVIDE STUDENT ID " ,example='STU_1000'), db: Session = Depends(get_db)):
+    student = db.query(Student).filter(Student.student_id  == student_id).first()
 
-    
-@app.get("/student-data/{student_id}")
-def get_student(student_id: str):
-    df = file_load()
-
-    
-    df['student_id'] = df['student_id'].astype(str)
-    student = df[df['student_id'] == student_id]
-
-    if student.empty:
+    if not student:
         raise HTTPException(status_code=404, detail="Student not found")
 
-    # Convert to JSON safe
-    student = student.replace({np.nan: None})
-    return student.to_json(orient="records")[0]
+    return student

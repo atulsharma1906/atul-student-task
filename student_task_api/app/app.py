@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-from app.routes import app
+from app.routes import   router
 
 app = FastAPI(title="Student API")
 
-app.include_router(app)
+app.include_router(router)
