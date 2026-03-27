@@ -27,4 +27,4 @@ def get_student(student_id: str):
 
     # Convert to JSON safe
     student = student.replace({np.nan: None})
-    return student.to_dict(orient="records")[0]
+    return student.to_json(orient="records")[0]
